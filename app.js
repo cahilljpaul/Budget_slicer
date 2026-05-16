@@ -1,5 +1,18 @@
-const MS_PER_DAY = 86_400_000;
-const STORAGE_KEY = "budget-slice-v2";
+const {
+  formatMoney,
+  formatPayday,
+  formatShortDate,
+  loadState,
+  saveState,
+  startOfDay,
+  getNextPayday,
+  getSpendingDaysLeft,
+  describePaydayConfig,
+  getSpendForDate,
+  addSpendEntry,
+  removeSpendEntry,
+  lastBusinessDayOfMonth,
+} = BudgetSlice;
 
 let paydayConfig = null;
 
@@ -31,159 +44,13 @@ const els = {
   whatIfDaily: document.getElementById("what-if-daily"),
   whatIfDisplay: document.getElementById("what-if-display"),
   whatIfResult: document.getElementById("what-if-result"),
+  spendAmount: document.getElementById("spend-amount"),
+  spendNote: document.getElementById("spend-note"),
+  spendAdd: document.getElementById("spend-add"),
+  spendTodayTotal: document.getElementById("spend-today-total"),
+  spendTodayStatus: document.getElementById("spend-today-status"),
+  spendList: document.getElementById("spend-list"),
 };
-
-function startOfDay(date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function lastBusinessDayOfMonth(year, monthIndex) {
-  const d = new Date(year, monthIndex + 1, 0);
-  while (d.getDay() === 0 || d.getDay() === 6) {
-    d.setDate(d.getDate() - 1);
-  }
-  return startOfDay(d);
-}
-
-function paydayOnDayOfMonth(year, monthIndex, dayOfMonth, adjustWeekend) {
-  const lastDay = new Date(year, monthIndex + 1, 0).getDate();
-  const day = Math.min(dayOfMonth, lastDay);
-  const d = new Date(year, monthIndex, day);
-
-  if (adjustWeekend) {
-    while (d.getDay() === 0 || d.getDay() === 6) {
-      d.setDate(d.getDate() - 1);
-    }
-  }
-
-  return startOfDay(d);
-}
-
-function getDayOfMonthFromConfig(config) {
-  if (config.type === "anchor-date") {
-    return new Date(config.anchorDate + "T12:00:00").getDate();
-  }
-  return config.dayOfMonth;
-}
-
-function getNextPayday(from = new Date(), config = paydayConfig) {
-  if (!config) return null;
-
-  const today = startOfDay(from);
-
-  if (config.type === "last-weekday") {
-    let payday = lastBusinessDayOfMonth(today.getFullYear(), today.getMonth());
-    if (today.getTime() > payday.getTime()) {
-      const month = today.getMonth();
-      const year = month === 11 ? today.getFullYear() + 1 : today.getFullYear();
-      const nextMonth = month === 11 ? 0 : month + 1;
-      payday = lastBusinessDayOfMonth(year, nextMonth);
-    }
-    return payday;
-  }
-
-  if (config.type === "anchor-date" && config.anchorDate) {
-    const anchor = startOfDay(new Date(`${config.anchorDate}T12:00:00`));
-    if (anchor.getTime() >= today.getTime()) {
-      return anchor;
-    }
-  }
-
-  const dayOfMonth = getDayOfMonthFromConfig(config);
-  const adjustWeekend = Boolean(config.adjustWeekend);
-
-  let payday = paydayOnDayOfMonth(today.getFullYear(), today.getMonth(), dayOfMonth, adjustWeekend);
-
-  if (today.getTime() > payday.getTime()) {
-    const month = today.getMonth();
-    const year = month === 11 ? today.getFullYear() + 1 : today.getFullYear();
-    const nextMonth = month === 11 ? 0 : month + 1;
-    payday = paydayOnDayOfMonth(year, nextMonth, dayOfMonth, adjustWeekend);
-  }
-
-  return payday;
-}
-
-function getSpendingDaysLeft(today, payday) {
-  const diff = Math.floor((startOfDay(payday) - startOfDay(today)) / MS_PER_DAY);
-  return Math.max(0, diff);
-}
-
-function describePaydayConfig(config) {
-  if (!config) return "";
-
-  if (config.type === "last-weekday") {
-    return "Last weekday of each month";
-  }
-
-  const day = getDayOfMonthFromConfig(config);
-  const suffix =
-    day % 10 === 1 && day !== 11
-      ? "st"
-      : day % 10 === 2 && day !== 12
-        ? "nd"
-        : day % 10 === 3 && day !== 13
-          ? "rd"
-          : "th";
-
-  let text = `${day}${suffix} of each month`;
-  if (config.adjustWeekend) {
-    text += " (Friday if weekend)";
-  }
-  return text;
-}
-
-function formatMoney(amount) {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
-
-function formatPayday(date) {
-  return new Intl.DateTimeFormat("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(date);
-}
-
-function formatShortDate(date) {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-  }).format(date);
-}
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("budget-slice-v1");
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveState(partial) {
-  try {
-    const existing = loadState() || {};
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        ...existing,
-        ...partial,
-        paydayConfig,
-      }),
-    );
-  } catch {
-    /* ignore quota errors */
-  }
-}
 
 function syncRangeAndNumber(rangeEl, numEl, value) {
   const max = Number(rangeEl.max);
@@ -213,6 +80,10 @@ function expandMoneySlider(maxNeeded) {
   if (Number(els.moneyLeft.max) < nextMax) {
     els.moneyLeft.max = String(nextMax);
   }
+}
+
+function persistBudget(partial) {
+  saveState({ ...partial, paydayConfig });
 }
 
 function getSelectedPaydayType() {
@@ -291,26 +162,130 @@ function closePaydayModal() {
   document.body.classList.remove("modal-open");
 }
 
-function validatePaydayForm() {
+function savePaydayFromModal() {
   const config = readPaydayConfigFromForm();
   if (!config) {
     els.paydayAnchor.focus();
-    return null;
+    return;
   }
-  return config;
-}
-
-function savePaydayFromModal() {
-  const config = validatePaydayForm();
-  if (!config) return;
 
   paydayConfig = config;
-  saveState({});
+  persistBudget({});
   closePaydayModal();
   calculate();
 }
 
+function renderSpendLog() {
+  const state = loadState() || {};
+  const target = Number(els.targetDaily.value);
+  const { total, entries } = getSpendForDate(state);
+
+  els.spendTodayTotal.textContent = formatMoney(total);
+
+  if (target === 0) {
+    els.spendTodayStatus.textContent = entries.length ? "Logged for today" : "Set a daily target to compare";
+    els.spendTodayStatus.className = "spend-status";
+  } else {
+    const diff = target - total;
+    if (diff > 0) {
+      els.spendTodayStatus.textContent = `${formatMoney(diff)} left of today's ${formatMoney(target)} target`;
+      els.spendTodayStatus.className = "spend-status spend-status-ok";
+    } else if (diff < 0) {
+      els.spendTodayStatus.textContent = `${formatMoney(-diff)} over today's target`;
+      els.spendTodayStatus.className = "spend-status spend-status-over";
+    } else {
+      els.spendTodayStatus.textContent = "Exactly on today's target";
+      els.spendTodayStatus.className = "spend-status spend-status-ok";
+    }
+  }
+
+  els.spendList.innerHTML = "";
+
+  if (!entries.length) {
+    const empty = document.createElement("li");
+    empty.className = "spend-empty";
+    empty.textContent = "No spend logged yet today.";
+    els.spendList.appendChild(empty);
+    return;
+  }
+
+  for (const entry of [...entries].reverse()) {
+    const li = document.createElement("li");
+    li.className = "spend-item";
+
+    const main = document.createElement("div");
+    main.className = "spend-item-main";
+    const amountEl = document.createElement("strong");
+    amountEl.textContent = formatMoney(entry.amount);
+    main.appendChild(amountEl);
+    if (entry.note) {
+      const noteEl = document.createElement("span");
+      noteEl.textContent = entry.note;
+      main.appendChild(noteEl);
+    }
+
+    const undo = document.createElement("button");
+    undo.type = "button";
+    undo.className = "text-btn spend-undo";
+    undo.textContent = "Undo";
+    undo.addEventListener("click", () => undoSpend(entry));
+
+    li.append(main, undo);
+    els.spendList.appendChild(li);
+  }
+}
+
+function undoSpend(entry) {
+  const state = loadState() || {};
+  const spendLog = removeSpendEntry(state, entry.id);
+  const moneyLeft = Number(els.moneyLeft.value) + entry.amount;
+
+  els.moneyLeft.value = String(moneyLeft);
+  els.moneyLeftNum.value = String(moneyLeft);
+  els.moneyLeftDisplay.textContent = formatMoney(moneyLeft);
+
+  persistBudget({
+    spendLog,
+    moneyLeft,
+    targetDaily: Number(els.targetDaily.value),
+    whatIfDaily: Number(els.whatIfDaily.value),
+  });
+
+  renderSpendLog();
+  calculate();
+}
+
+function logSpend() {
+  const amount = Number(els.spendAmount.value);
+  if (!amount || amount <= 0) {
+    els.spendAmount.focus();
+    return;
+  }
+
+  const state = loadState() || {};
+  const spendLog = addSpendEntry(state, amount, els.spendNote.value);
+  const moneyLeft = Math.max(0, Number(els.moneyLeft.value) - amount);
+
+  els.moneyLeft.value = String(moneyLeft);
+  els.moneyLeftNum.value = String(moneyLeft);
+  els.moneyLeftDisplay.textContent = formatMoney(moneyLeft);
+  els.spendAmount.value = "";
+  els.spendNote.value = "";
+
+  persistBudget({
+    spendLog,
+    moneyLeft,
+    targetDaily: Number(els.targetDaily.value),
+    whatIfDaily: Number(els.whatIfDaily.value),
+  });
+
+  renderSpendLog();
+  calculate();
+}
+
 function calculate() {
+  renderSpendLog();
+
   if (!paydayConfig) {
     els.paydayDate.textContent = "—";
     els.paydayMeta.textContent = "Set your payday to get started";
@@ -350,7 +325,7 @@ function calculate() {
     els.verdict.hidden = true;
     els.results.classList.remove("on-track", "short");
     updateWhatIf(days, money, whatIf);
-    saveState({ moneyLeft: money, targetDaily: target, whatIfDaily: whatIf });
+    persistBudget({ moneyLeft: money, targetDaily: target, whatIfDaily: whatIf });
     return;
   }
 
@@ -388,7 +363,7 @@ function calculate() {
 
   expandMoneySlider(target * days);
   updateWhatIf(days, money, whatIf);
-  saveState({ moneyLeft: money, targetDaily: target, whatIfDaily: whatIf });
+  persistBudget({ moneyLeft: money, targetDaily: target, whatIfDaily: whatIf });
 }
 
 function updateWhatIf(days, money, rate) {
@@ -463,6 +438,11 @@ function init() {
   bindPair(els.moneyLeft, els.moneyLeftNum, els.moneyLeftDisplay, recalc);
   bindPair(els.targetDaily, els.targetDailyNum, els.targetDailyDisplay, recalc);
   els.whatIfDaily.addEventListener("input", recalc);
+
+  els.spendAdd.addEventListener("click", logSpend);
+  els.spendAmount.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") logSpend();
+  });
 
   els.moneyLeftDisplay.textContent = formatMoney(Number(els.moneyLeft.value));
   els.targetDailyDisplay.textContent = formatMoney(Number(els.targetDaily.value));

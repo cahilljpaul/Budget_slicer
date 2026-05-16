@@ -4,29 +4,36 @@ Budget Slice is a small browser-based budgeting tool that helps you track how mu
 
 ## Features
 
-- Set your next payday using:
-  - last weekday of the month
-  - specific day of the month
-  - custom anchor date
+**Budget** (`index.html`)
+
+- Set your next payday (last weekday, fixed date, or custom)
 - Track remaining money and target daily spend
-- See how many days you have to budget
-- Compare sustainable daily spend against your target
-- View a "what if" forecast for alternate daily spending
-- Saves your settings in local browser storage
+- **Log today's spend** — subtracts from balance and compares to your daily target
+- Sustainable daily spend, gap vs target, and what-if slider
+- Saves settings in local browser storage
+
+**Save & grow** (`savings.html`)
+
+- Monthly take-home and savings percentage
+- Goal pots (holiday, car, etc.) with suggested monthly amounts
+- Quick wage-split examples (pay yourself first, 50/30/20, envelopes, 1/12 rule)
+- Suggested split: living costs, emergency fund, pots, invest/grow
+- Illustrative savings and investment product outlines (not financial advice)
 
 ## Files
 
-- `index.html` — app structure and interface
-- `styles.css` — app styles and layout
-- `app.js` — budget calculations and app behavior
+- `index.html` — daily budget page
+- `savings.html` — savings planner page
+- `shared.js` — storage, money formatting, payday helpers
+- `app.js` — budget page logic
+- `savings.js` — savings page logic
+- `styles.css` — shared styles
 
 ## Usage
 
-1. Open `index.html` in your browser.
-2. Choose your payday schedule and save it.
-3. Enter how much money you have left.
-4. Set your target daily spend.
-5. Review the number of budgeting days, sustainable daily spend, and gap vs target.
+1. Open `index.html` in your browser (or run a local server).
+2. Use the **Budget** tab for daily spending until payday.
+3. Use the **Save** tab to plan pots and longer-term savings.
 
 ## Notes
 

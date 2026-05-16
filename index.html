@@ -70,6 +70,36 @@
       </div>
     </section>
 
+    <section class="card spend-card">
+      <h2 class="section-title">Log today's spend</h2>
+      <p class="card-lead">Subtracts from money left and tracks against your daily target.</p>
+      <div class="spend-today">
+        <p class="spend-today-label">Spent today</p>
+        <p class="spend-today-value" id="spend-today-total">£0</p>
+        <p class="spend-status" id="spend-today-status">—</p>
+      </div>
+      <div class="spend-form">
+        <input
+          type="number"
+          id="spend-amount"
+          class="num-input"
+          min="0"
+          step="0.01"
+          placeholder="Amount"
+          aria-label="Spend amount in pounds"
+        />
+        <input
+          type="text"
+          id="spend-note"
+          class="num-input"
+          placeholder="Note (optional)"
+          aria-label="Spend note"
+        />
+        <button type="button" class="btn-primary btn-compact" id="spend-add">Add spend</button>
+      </div>
+      <ul class="spend-list" id="spend-list" aria-label="Today's spend entries"></ul>
+    </section>
+
     <section class="card results" id="results">
       <div class="stat-grid">
         <article class="stat">
@@ -176,6 +206,12 @@
     </div>
   </div>
 
+  <nav class="bottom-nav" aria-label="Main">
+    <a href="index.html" class="nav-link nav-link-active">Budget</a>
+    <a href="savings.html" class="nav-link">Save</a>
+  </nav>
+
+  <script src="shared.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

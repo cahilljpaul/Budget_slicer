@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Save &amp; grow — Budget Slice</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app app-savings">
+    <header class="header">
+      <h1>Save &amp; grow</h1>
+      <p class="tagline">Split your wage into pots, savings, and investments</p>
+    </header>
+
+    <section class="card">
+      <h2 class="section-title">Your payday</h2>
+      <div class="field">
+        <div class="field-header">
+          <label for="monthly-income">Monthly take-home pay</label>
+          <span class="value-display value-display-gold" id="income-display">£2,000</span>
+        </div>
+        <input type="range" id="monthly-income" min="500" max="8000" step="50" value="2000" />
+        <input type="number" id="monthly-income-num" class="num-input" min="0" step="50" value="2000" aria-label="Monthly take-home in pounds" />
+      </div>
+
+      <div class="field">
+        <div class="field-header">
+          <label for="save-percent">Save from each paycheck</label>
+          <span class="value-display value-display-gold" id="save-percent-display">20%</span>
+        </div>
+        <input type="range" id="save-percent" min="0" max="50" step="1" value="20" />
+        <p class="field-hint" id="save-amount-hint">£400/month into savings &amp; pots</p>
+      </div>
+
+      <div class="field">
+        <label class="inline-label" for="emergency-months">Emergency fund target (months of essentials)</label>
+        <select id="emergency-months" class="num-input">
+          <option value="1">1 month</option>
+          <option value="3" selected>3 months</option>
+          <option value="6">6 months</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header-row">
+        <h2 class="section-title">Goal pots</h2>
+        <button type="button" class="text-btn" id="add-pot">+ Add pot</button>
+      </div>
+      <p class="card-lead">Things you’re saving for — holiday, car, deposit, etc.</p>
+      <div id="pots-list" class="pots-list"></div>
+    </section>
+
+    <section class="card card-examples">
+      <h2 class="section-title">Quick ways to save your wage</h2>
+      <div class="example-grid" id="wage-examples"></div>
+    </section>
+
+    <section class="card card-plan" id="plan-section">
+      <h2 class="section-title">Your suggested split</h2>
+      <p class="card-lead" id="plan-summary"></p>
+
+      <div class="plan-bars" id="plan-bars"></div>
+
+      <h3 class="subsection-title">Goal pots — monthly</h3>
+      <ul class="pot-results" id="pot-results"></ul>
+
+      <h3 class="subsection-title">Where to put longer-term money</h3>
+      <div class="product-grid" id="product-grid"></div>
+
+      <p class="disclaimer">Illustrative rates only — not financial advice. Check providers and your own situation before saving or investing.</p>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Main">
+    <a href="index.html" class="nav-link">Budget</a>
+    <a href="savings.html" class="nav-link nav-link-active">Save</a>
+  </nav>
+
+  <script src="shared.js"></script>
+  <script src="savings.js"></script>
+</body>
+</html>
