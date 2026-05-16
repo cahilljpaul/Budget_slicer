@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Budget Slice</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <h1>Budget Slice</h1>
+      <p class="tagline">Daily spend until payday</p>
+    </header>
+
+    <section class="card payday-card" aria-live="polite">
+      <p class="label">Next payday</p>
+      <p class="payday-date" id="payday-date">—</p>
+      <p class="payday-meta" id="payday-meta">Last business day of the month</p>
+    </section>
+
+    <section class="card inputs">
+      <div class="field">
+        <div class="field-header">
+          <label for="money-left">Money left</label>
+          <span class="value-display" id="money-left-display">£0</span>
+        </div>
+        <input
+          type="range"
+          id="money-left"
+          min="0"
+          max="3000"
+          step="10"
+          value="600"
+        />
+        <input
+          type="number"
+          id="money-left-num"
+          class="num-input"
+          min="0"
+          step="1"
+          value="600"
+          aria-label="Money left in pounds"
+        />
+      </div>
+
+      <div class="field">
+        <div class="field-header">
+          <label for="target-daily">Target spend per day</label>
+          <span class="value-display" id="target-daily-display">£30</span>
+        </div>
+        <input
+          type="range"
+          id="target-daily"
+          min="0"
+          max="150"
+          step="1"
+          value="30"
+        />
+        <input
+          type="number"
+          id="target-daily-num"
+          class="num-input"
+          min="0"
+          step="1"
+          value="30"
+          aria-label="Target daily spend in pounds"
+        />
+      </div>
+    </section>
+
+    <section class="card results" id="results">
+      <div class="stat-grid">
+        <article class="stat">
+          <p class="stat-label">Days to budget</p>
+          <p class="stat-value" id="days-left">—</p>
+          <p class="stat-hint">Through day before payday</p>
+        </article>
+        <article class="stat stat-primary">
+          <p class="stat-label">You can spend per day</p>
+          <p class="stat-value" id="sustainable-daily">—</p>
+        </article>
+      </div>
+
+      <div class="verdict" id="verdict" hidden>
+        <p id="verdict-text"></p>
+      </div>
+
+      <div class="detail-grid" id="detail-grid">
+        <article class="detail">
+          <p class="detail-label">Gap vs target</p>
+          <p class="detail-value" id="gap-daily">—</p>
+        </article>
+        <article class="detail">
+          <p class="detail-label">Days at £0 (at target rate)</p>
+          <p class="detail-value" id="zero-days">—</p>
+        </article>
+        <article class="detail detail-wide">
+          <p class="detail-label">Extra needed to hit target daily</p>
+          <p class="detail-value" id="extra-needed">—</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="card what-if">
+      <div class="field">
+        <div class="field-header">
+          <label for="what-if-daily">What if I spend… per day?</label>
+          <span class="value-display" id="what-if-display">£20</span>
+        </div>
+        <input
+          type="range"
+          id="what-if-daily"
+          min="0"
+          max="150"
+          step="1"
+          value="20"
+        />
+      </div>
+      <p class="what-if-result" id="what-if-result"></p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
