@@ -16,7 +16,8 @@
     <section class="card payday-card" aria-live="polite">
       <p class="label">Next payday</p>
       <p class="payday-date" id="payday-date">—</p>
-      <p class="payday-meta" id="payday-meta">Last business day of the month</p>
+      <p class="payday-meta" id="payday-meta">Set your payday to get started</p>
+      <button type="button" class="text-btn" id="change-payday">Change payday</button>
     </section>
 
     <section class="card inputs">
@@ -120,6 +121,60 @@
       <p class="what-if-result" id="what-if-result"></p>
     </section>
   </main>
+
+  <div id="payday-modal" class="modal" hidden aria-hidden="true">
+    <div class="modal-backdrop" data-close-payday></div>
+    <div class="modal-panel" role="dialog" aria-labelledby="payday-modal-title" aria-modal="true">
+      <h2 id="payday-modal-title">When is your payday?</h2>
+      <p class="modal-lead">We count days until payday — payday itself isn’t included in your daily budget.</p>
+
+      <fieldset class="payday-options">
+        <legend class="sr-only">Payday schedule</legend>
+
+        <label class="option">
+          <input type="radio" name="payday-type" value="last-weekday" checked />
+          <span class="option-text">
+            <strong>Last weekday of the month</strong>
+            <small>Friday if the month ends on a weekend</small>
+          </span>
+        </label>
+
+        <label class="option">
+          <input type="radio" name="payday-type" value="day-of-month" />
+          <span class="option-text">
+            <strong>Same date every month</strong>
+            <small>e.g. the 25th, or the 15th</small>
+          </span>
+        </label>
+
+        <div class="option-extra" id="day-of-month-fields" hidden>
+          <label class="inline-label" for="payday-day">Day of month</label>
+          <input type="number" id="payday-day" class="num-input num-input-compact" min="1" max="31" value="25" />
+          <label class="option option-nested">
+            <input type="checkbox" id="payday-weekend-adjust" checked />
+            <span class="option-text">
+              <strong>If it’s a weekend, use the Friday before</strong>
+            </span>
+          </label>
+        </div>
+
+        <label class="option">
+          <input type="radio" name="payday-type" value="anchor-date" />
+          <span class="option-text">
+            <strong>I’ll pick my next payday</strong>
+            <small>Repeats on that date each month</small>
+          </span>
+        </label>
+
+        <div class="option-extra" id="anchor-date-fields" hidden>
+          <label class="inline-label" for="payday-anchor">Next payday</label>
+          <input type="date" id="payday-anchor" class="num-input" />
+        </div>
+      </fieldset>
+
+      <button type="button" class="btn-primary" id="payday-save">Continue</button>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

@@ -1,9 +1,19 @@
 const MS_PER_DAY = 86_400_000;
-const STORAGE_KEY = "budget-slice-v1";
+const STORAGE_KEY = "budget-slice-v2";
+
+let paydayConfig = null;
 
 const els = {
   paydayDate: document.getElementById("payday-date"),
   paydayMeta: document.getElementById("payday-meta"),
+  changePayday: document.getElementById("change-payday"),
+  paydayModal: document.getElementById("payday-modal"),
+  paydaySave: document.getElementById("payday-save"),
+  paydayDay: document.getElementById("payday-day"),
+  paydayWeekendAdjust: document.getElementById("payday-weekend-adjust"),
+  paydayAnchor: document.getElementById("payday-anchor"),
+  dayOfMonthFields: document.getElementById("day-of-month-fields"),
+  anchorDateFields: document.getElementById("anchor-date-fields"),
   moneyLeft: document.getElementById("money-left"),
   moneyLeftNum: document.getElementById("money-left-num"),
   moneyLeftDisplay: document.getElementById("money-left-display"),
@@ -29,7 +39,6 @@ function startOfDay(date) {
   return d;
 }
 
-/** Last weekday (Mon–Fri) of the given calendar month. */
 function lastBusinessDayOfMonth(year, monthIndex) {
   const d = new Date(year, monthIndex + 1, 0);
   while (d.getDay() === 0 || d.getDay() === 6) {
@@ -38,28 +47,92 @@ function lastBusinessDayOfMonth(year, monthIndex) {
   return startOfDay(d);
 }
 
-/** Next payday on or after today. */
-function getNextPayday(from = new Date()) {
+function paydayOnDayOfMonth(year, monthIndex, dayOfMonth, adjustWeekend) {
+  const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+  const day = Math.min(dayOfMonth, lastDay);
+  const d = new Date(year, monthIndex, day);
+
+  if (adjustWeekend) {
+    while (d.getDay() === 0 || d.getDay() === 6) {
+      d.setDate(d.getDate() - 1);
+    }
+  }
+
+  return startOfDay(d);
+}
+
+function getDayOfMonthFromConfig(config) {
+  if (config.type === "anchor-date") {
+    return new Date(config.anchorDate + "T12:00:00").getDate();
+  }
+  return config.dayOfMonth;
+}
+
+function getNextPayday(from = new Date(), config = paydayConfig) {
+  if (!config) return null;
+
   const today = startOfDay(from);
-  let payday = lastBusinessDayOfMonth(today.getFullYear(), today.getMonth());
+
+  if (config.type === "last-weekday") {
+    let payday = lastBusinessDayOfMonth(today.getFullYear(), today.getMonth());
+    if (today.getTime() > payday.getTime()) {
+      const month = today.getMonth();
+      const year = month === 11 ? today.getFullYear() + 1 : today.getFullYear();
+      const nextMonth = month === 11 ? 0 : month + 1;
+      payday = lastBusinessDayOfMonth(year, nextMonth);
+    }
+    return payday;
+  }
+
+  if (config.type === "anchor-date" && config.anchorDate) {
+    const anchor = startOfDay(new Date(`${config.anchorDate}T12:00:00`));
+    if (anchor.getTime() >= today.getTime()) {
+      return anchor;
+    }
+  }
+
+  const dayOfMonth = getDayOfMonthFromConfig(config);
+  const adjustWeekend = Boolean(config.adjustWeekend);
+
+  let payday = paydayOnDayOfMonth(today.getFullYear(), today.getMonth(), dayOfMonth, adjustWeekend);
 
   if (today.getTime() > payday.getTime()) {
     const month = today.getMonth();
     const year = month === 11 ? today.getFullYear() + 1 : today.getFullYear();
     const nextMonth = month === 11 ? 0 : month + 1;
-    payday = lastBusinessDayOfMonth(year, nextMonth);
+    payday = paydayOnDayOfMonth(year, nextMonth, dayOfMonth, adjustWeekend);
   }
 
   return payday;
 }
 
-/**
- * Spending days from today through the day before payday (payday excluded).
- * If today is payday, returns 0.
- */
 function getSpendingDaysLeft(today, payday) {
   const diff = Math.floor((startOfDay(payday) - startOfDay(today)) / MS_PER_DAY);
   return Math.max(0, diff);
+}
+
+function describePaydayConfig(config) {
+  if (!config) return "";
+
+  if (config.type === "last-weekday") {
+    return "Last weekday of each month";
+  }
+
+  const day = getDayOfMonthFromConfig(config);
+  const suffix =
+    day % 10 === 1 && day !== 11
+      ? "st"
+      : day % 10 === 2 && day !== 12
+        ? "nd"
+        : day % 10 === 3 && day !== 13
+          ? "rd"
+          : "th";
+
+  let text = `${day}${suffix} of each month`;
+  if (config.adjustWeekend) {
+    text += " (Friday if weekend)";
+  }
+  return text;
 }
 
 function formatMoney(amount) {
@@ -89,16 +162,24 @@ function formatShortDate(date) {
 
 function loadState() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("budget-slice-v1");
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 }
 
-function saveState(state) {
+function saveState(partial) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const existing = loadState() || {};
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        ...existing,
+        ...partial,
+        paydayConfig,
+      }),
+    );
   } catch {
     /* ignore quota errors */
   }
@@ -113,15 +194,15 @@ function syncRangeAndNumber(rangeEl, numEl, value) {
 }
 
 function bindPair(rangeEl, numEl, displayEl, onChange) {
-  const update = (value, from) => {
+  const update = (value) => {
     const v = syncRangeAndNumber(rangeEl, numEl, value);
     if (displayEl) displayEl.textContent = formatMoney(v);
-    onChange(v, from);
+    onChange(v);
   };
 
-  rangeEl.addEventListener("input", () => update(Number(rangeEl.value), "range"));
-  numEl.addEventListener("input", () => update(Number(numEl.value) || 0, "num"));
-  numEl.addEventListener("change", () => update(Number(numEl.value) || 0, "num"));
+  rangeEl.addEventListener("input", () => update(Number(rangeEl.value)));
+  numEl.addEventListener("input", () => update(Number(numEl.value) || 0));
+  numEl.addEventListener("change", () => update(Number(numEl.value) || 0));
 
   return update;
 }
@@ -134,9 +215,110 @@ function expandMoneySlider(maxNeeded) {
   }
 }
 
+function getSelectedPaydayType() {
+  const selected = document.querySelector('input[name="payday-type"]:checked');
+  return selected?.value ?? "last-weekday";
+}
+
+function updatePaydayOptionVisibility() {
+  const type = getSelectedPaydayType();
+  els.dayOfMonthFields.hidden = type !== "day-of-month";
+  els.anchorDateFields.hidden = type !== "anchor-date";
+}
+
+function defaultAnchorDate() {
+  const payday = getNextPayday(new Date(), { type: "last-weekday" });
+  return payday.toISOString().slice(0, 10);
+}
+
+function readPaydayConfigFromForm() {
+  const type = getSelectedPaydayType();
+
+  if (type === "last-weekday") {
+    return { type: "last-weekday" };
+  }
+
+  if (type === "day-of-month") {
+    const dayOfMonth = Math.min(31, Math.max(1, Number(els.paydayDay.value) || 1));
+    return {
+      type: "day-of-month",
+      dayOfMonth,
+      adjustWeekend: els.paydayWeekendAdjust.checked,
+    };
+  }
+
+  const anchorDate = els.paydayAnchor.value;
+  if (!anchorDate) return null;
+
+  return {
+    type: "anchor-date",
+    anchorDate,
+    adjustWeekend: false,
+  };
+}
+
+function fillPaydayForm(config) {
+  const type = config?.type ?? "last-weekday";
+  const radio = document.querySelector(`input[name="payday-type"][value="${type}"]`);
+  if (radio) radio.checked = true;
+
+  if (config?.dayOfMonth != null) {
+    els.paydayDay.value = String(config.dayOfMonth);
+  }
+  if (config?.adjustWeekend != null) {
+    els.paydayWeekendAdjust.checked = config.adjustWeekend;
+  }
+  if (config?.anchorDate) {
+    els.paydayAnchor.value = config.anchorDate;
+  } else if (!els.paydayAnchor.value) {
+    els.paydayAnchor.value = defaultAnchorDate();
+  }
+
+  updatePaydayOptionVisibility();
+}
+
+function openPaydayModal(config = paydayConfig) {
+  fillPaydayForm(config);
+  els.paydayModal.hidden = false;
+  els.paydayModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  els.paydaySave.focus();
+}
+
+function closePaydayModal() {
+  els.paydayModal.hidden = true;
+  els.paydayModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+}
+
+function validatePaydayForm() {
+  const config = readPaydayConfigFromForm();
+  if (!config) {
+    els.paydayAnchor.focus();
+    return null;
+  }
+  return config;
+}
+
+function savePaydayFromModal() {
+  const config = validatePaydayForm();
+  if (!config) return;
+
+  paydayConfig = config;
+  saveState({});
+  closePaydayModal();
+  calculate();
+}
+
 function calculate() {
+  if (!paydayConfig) {
+    els.paydayDate.textContent = "—";
+    els.paydayMeta.textContent = "Set your payday to get started";
+    return;
+  }
+
   const today = startOfDay(new Date());
-  const payday = getNextPayday(today);
+  const payday = getNextPayday(today, paydayConfig);
   const days = getSpendingDaysLeft(today, payday);
 
   const money = Number(els.moneyLeft.value);
@@ -144,17 +326,18 @@ function calculate() {
   const whatIf = Number(els.whatIfDaily.value);
 
   els.paydayDate.textContent = formatPayday(payday);
+  const schedule = describePaydayConfig(paydayConfig);
 
   const daysLabel = days === 1 ? "day" : "days";
   if (days === 0) {
     els.paydayMeta.textContent =
       today.getTime() === payday.getTime()
-        ? "Today is payday — no spending days left in this cycle"
-        : "No spending days left before payday";
+        ? `${schedule} · today is payday`
+        : `${schedule} · no spending days left before payday`;
   } else {
     const lastSpendingDay = new Date(payday);
     lastSpendingDay.setDate(lastSpendingDay.getDate() - 1);
-    els.paydayMeta.textContent = `${days} ${daysLabel} to budget · last spending day ${formatShortDate(lastSpendingDay)}`;
+    els.paydayMeta.textContent = `${schedule} · ${days} ${daysLabel} to budget · last spending day ${formatShortDate(lastSpendingDay)}`;
   }
 
   els.daysLeft.textContent = String(days);
@@ -167,6 +350,7 @@ function calculate() {
     els.verdict.hidden = true;
     els.results.classList.remove("on-track", "short");
     updateWhatIf(days, money, whatIf);
+    saveState({ moneyLeft: money, targetDaily: target, whatIfDaily: whatIf });
     return;
   }
 
@@ -204,12 +388,7 @@ function calculate() {
 
   expandMoneySlider(target * days);
   updateWhatIf(days, money, whatIf);
-
-  saveState({
-    moneyLeft: money,
-    targetDaily: target,
-    whatIfDaily: whatIf,
-  });
+  saveState({ moneyLeft: money, targetDaily: target, whatIfDaily: whatIf });
 }
 
 function updateWhatIf(days, money, rate) {
@@ -234,12 +413,38 @@ function updateWhatIf(days, money, rate) {
   } else {
     const brokeOn = new Date(startOfDay(new Date()));
     brokeOn.setDate(brokeOn.getDate() + Math.floor(runway));
-    els.whatIfResult.textContent = `Money runs out around ${formatShortDate(brokeOn)} — about ${Math.ceil(days - runway)} ${Math.ceil(days - runway) === 1 ? "day" : "days"} before payday.`;
+    const shortDays = Math.ceil(days - runway);
+    els.whatIfResult.textContent = `Money runs out around ${formatShortDate(brokeOn)} — about ${shortDays} ${shortDays === 1 ? "day" : "days"} before payday.`;
+  }
+}
+
+function initPaydayModal() {
+  document.querySelectorAll('input[name="payday-type"]').forEach((radio) => {
+    radio.addEventListener("change", updatePaydayOptionVisibility);
+  });
+
+  els.paydaySave.addEventListener("click", savePaydayFromModal);
+  els.changePayday.addEventListener("click", () => openPaydayModal(paydayConfig));
+
+  els.paydayModal.querySelector("[data-close-payday]")?.addEventListener("click", () => {
+    if (paydayConfig) closePaydayModal();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !els.paydayModal.hidden && paydayConfig) {
+      closePaydayModal();
+    }
+  });
+
+  if (!els.paydayAnchor.value) {
+    els.paydayAnchor.value = defaultAnchorDate();
+    els.paydayAnchor.min = new Date().toISOString().slice(0, 10);
   }
 }
 
 function init() {
   const saved = loadState();
+  paydayConfig = saved?.paydayConfig ?? null;
 
   if (saved?.moneyLeft != null) {
     els.moneyLeft.value = saved.moneyLeft;
@@ -262,7 +467,13 @@ function init() {
   els.moneyLeftDisplay.textContent = formatMoney(Number(els.moneyLeft.value));
   els.targetDailyDisplay.textContent = formatMoney(Number(els.targetDaily.value));
 
-  calculate();
+  initPaydayModal();
+
+  if (paydayConfig) {
+    calculate();
+  } else {
+    openPaydayModal();
+  }
 }
 
 init();
