@@ -39,3 +39,5 @@ Budget Slice is a small browser-based budgeting tool that helps you track how mu
 
 - The app runs entirely in the browser; no backend or build step is required.
 - Your settings are persisted in local storage so they remain after refreshing the page.
+- If this project helped you, you can support future development here:
+- [☕ Buy me a coffee](https://buymeacoffee.com/cahilljpaus)

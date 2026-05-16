@@ -1105,3 +1105,31 @@ input[type="range"] {
 select.num-input {
   cursor: pointer;
 }
+
+.app-footer {
+  position: fixed;
+  bottom: 4rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.buy-coffee-link {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.buy-coffee-link:hover {
+  color: var(--text);
+  background: rgba(139, 163, 184, 0.1);
+}
+
+.buy-coffee-link:active {
+  opacity: 0.7;
+}
