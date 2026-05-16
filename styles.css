@@ -539,6 +539,12 @@ body.modal-open {
   font-variant-numeric: tabular-nums;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 input[type="range"] {
   width: 100%;
   height: 6px;

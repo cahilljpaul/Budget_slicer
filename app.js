@@ -33,6 +33,7 @@ const els = {
   targetDaily: document.getElementById("target-daily"),
   targetDailyNum: document.getElementById("target-daily-num"),
   targetDailyDisplay: document.getElementById("target-daily-display"),
+  setSustainable: document.getElementById("set-sustainable"),
   daysLeft: document.getElementById("days-left"),
   sustainableDaily: document.getElementById("sustainable-daily"),
   gapDaily: document.getElementById("gap-daily"),
@@ -386,6 +387,18 @@ function updateWhatIf(days, money, rate) {
   }
 }
 
+function setSustainableAsTarget() {
+  const sustainableText = els.sustainableDaily.textContent;
+  if (sustainableText === "—") return;
+
+  // Extract numeric value from formatted money string (e.g., "£25.50" -> 25.50)
+  const sustainableValue = parseFloat(sustainableText.replace(/[^0-9.]/g, ""));
+  if (!isNaN(sustainableValue)) {
+    const update = bindPair(els.targetDaily, els.targetDailyNum, els.targetDailyDisplay, calculate);
+    update(sustainableValue);
+  }
+}
+
 function initPaydayModal() {
   document.querySelectorAll('input[name="payday-type"]').forEach((radio) => {
     radio.addEventListener("change", updatePaydayOptionVisibility);
@@ -431,6 +444,8 @@ function init() {
   bindPair(els.moneyLeft, els.moneyLeftNum, els.moneyLeftDisplay, recalc);
   bindPair(els.targetDaily, els.targetDailyNum, els.targetDailyDisplay, recalc);
   els.whatIfDaily.addEventListener("input", recalc);
+
+  els.setSustainable.addEventListener("click", setSustainableAsTarget);
 
   els.spendAdd.addEventListener("click", logSpend);
   els.spendAmount.addEventListener("keydown", (e) => {
