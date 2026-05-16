@@ -1,4 +1,12 @@
-const { formatMoney, loadState, saveState } = BudgetSlice;
+const {
+  formatMoney,
+  loadState,
+  saveState,
+  startOfDay,
+  getNextPayday,
+  getSpendingDaysLeft,
+  getSpendForDate,
+} = BudgetSlice;
 
 const WAGE_EXAMPLES = [
   {
@@ -92,7 +100,50 @@ const els = {
   planBars: document.getElementById("plan-bars"),
   potResults: document.getElementById("pot-results"),
   productGrid: document.getElementById("product-grid"),
+  budgetBridge: document.getElementById("budget-bridge"),
+  budgetBridgeStats: document.getElementById("budget-bridge-stats"),
 };
+
+function renderBudgetBridge() {
+  const state = loadState() || {};
+  const config = state.paydayConfig;
+
+  if (!config) {
+    els.budgetBridge.hidden = true;
+    return;
+  }
+
+  const today = startOfDay(new Date());
+  const payday = getNextPayday(today, config);
+  const days = getSpendingDaysLeft(today, payday);
+  const money = state.moneyLeft ?? 0;
+  const target = state.targetDaily ?? 0;
+  const { total: spentToday } = getSpendForDate(state);
+  const sustainable = days > 0 ? money / days : null;
+
+  const stats = [
+    { label: "Money left", value: formatMoney(money) },
+    { label: "Target per day", value: formatMoney(target) },
+    { label: "Spent today", value: formatMoney(spentToday) },
+  ];
+
+  if (sustainable != null) {
+    stats.push({ label: "You can spend / day", value: formatMoney(sustainable) });
+  }
+
+  els.budgetBridgeStats.innerHTML = stats
+    .map(
+      (s) => `
+    <article class="bridge-stat">
+      <p class="bridge-stat-label">${s.label}</p>
+      <p class="bridge-stat-value">${s.value}</p>
+    </article>
+  `,
+    )
+    .join("");
+
+  els.budgetBridge.hidden = false;
+}
 
 function syncRangeAndNumber(rangeEl, numEl, value) {
   const max = Number(rangeEl.max);
@@ -390,6 +441,7 @@ function init() {
   });
 
   renderPotsEditor();
+  renderBudgetBridge();
   recalculate();
 }
 

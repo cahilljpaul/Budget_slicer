@@ -10,8 +10,14 @@
   <main class="app app-savings">
     <header class="header">
       <h1>Save &amp; grow</h1>
-      <p class="tagline">Split your wage into pots, savings, and investments</p>
+      <p class="tagline">Split your wage into pots, savings, and investments · <a href="index.html" class="header-link">Back to budget</a></p>
     </header>
+
+    <section class="card budget-bridge" id="budget-bridge" hidden>
+      <h2 class="section-title">From your budget</h2>
+      <p class="card-lead">Pulled from the Budget tab — same saved data in your browser.</p>
+      <div class="bridge-grid" id="budget-bridge-stats"></div>
+    </section>
 
     <section class="card">
       <h2 class="section-title">Your payday</h2>
@@ -74,8 +80,8 @@
   </main>
 
   <nav class="bottom-nav" aria-label="Main">
-    <a href="index.html" class="nav-link">Budget</a>
-    <a href="savings.html" class="nav-link nav-link-active">Save</a>
+    <a href="./index.html" class="nav-link">Budget</a>
+    <a href="./savings.html" class="nav-link nav-link-active" aria-current="page">Save</a>
   </nav>
 
   <script src="shared.js"></script>

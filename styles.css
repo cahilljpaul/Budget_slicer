@@ -60,6 +60,49 @@ body {
   font-size: 0.95rem;
 }
 
+.header-link {
+  color: var(--payday);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.header-link:hover {
+  color: #9ecaff;
+}
+
+.budget-bridge {
+  border-color: rgba(110, 181, 255, 0.35);
+  background: linear-gradient(145deg, #1a2838 0%, var(--surface) 100%);
+}
+
+.bridge-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.bridge-stat {
+  padding: 0.7rem 0.85rem;
+  background: var(--surface-raised);
+  border-radius: 8px;
+}
+
+.bridge-stat-label {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bridge-stat-value {
+  margin: 0.15rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--payday);
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
