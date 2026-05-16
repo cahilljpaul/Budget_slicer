@@ -394,8 +394,10 @@ function setSustainableAsTarget() {
   // Extract numeric value from formatted money string (e.g., "£25.50" -> 25.50)
   const sustainableValue = parseFloat(sustainableText.replace(/[^0-9.]/g, ""));
   if (!isNaN(sustainableValue)) {
-    const update = bindPair(els.targetDaily, els.targetDailyNum, els.targetDailyDisplay, calculate);
-    update(sustainableValue);
+    syncRangeAndNumber(els.targetDaily, els.targetDailyNum, sustainableValue);
+    els.targetDailyDisplay.textContent = formatMoney(sustainableValue);
+    persistBudget({ targetDaily: sustainableValue });
+    calculate();
   }
 }
 
