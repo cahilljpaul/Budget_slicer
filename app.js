@@ -45,7 +45,6 @@ const els = {
   whatIfDisplay: document.getElementById("what-if-display"),
   whatIfResult: document.getElementById("what-if-result"),
   spendAmount: document.getElementById("spend-amount"),
-  spendNote: document.getElementById("spend-note"),
   spendAdd: document.getElementById("spend-add"),
   spendTodayTotal: document.getElementById("spend-today-total"),
   spendTodayStatus: document.getElementById("spend-today-status"),
@@ -182,8 +181,14 @@ function renderSpendLog() {
 
   els.spendTodayTotal.textContent = formatMoney(total);
 
-  if (target === 0) {
-    els.spendTodayStatus.textContent = entries.length ? "Logged for today" : "Set a daily target to compare";
+  if (!entries.length) {
+    els.spendTodayStatus.textContent =
+      target > 0
+        ? `Target ${formatMoney(target)} today — log spend to update money left`
+        : "Log spend to subtract from money left";
+    els.spendTodayStatus.className = "spend-status";
+  } else if (target === 0) {
+    els.spendTodayStatus.textContent = `${entries.length} logged today`;
     els.spendTodayStatus.className = "spend-status";
   } else {
     const diff = target - total;
@@ -200,12 +205,9 @@ function renderSpendLog() {
   }
 
   els.spendList.innerHTML = "";
+  els.spendList.hidden = !entries.length;
 
   if (!entries.length) {
-    const empty = document.createElement("li");
-    empty.className = "spend-empty";
-    empty.textContent = "No spend logged yet today.";
-    els.spendList.appendChild(empty);
     return;
   }
 
@@ -213,16 +215,8 @@ function renderSpendLog() {
     const li = document.createElement("li");
     li.className = "spend-item";
 
-    const main = document.createElement("div");
-    main.className = "spend-item-main";
     const amountEl = document.createElement("strong");
     amountEl.textContent = formatMoney(entry.amount);
-    main.appendChild(amountEl);
-    if (entry.note) {
-      const noteEl = document.createElement("span");
-      noteEl.textContent = entry.note;
-      main.appendChild(noteEl);
-    }
 
     const undo = document.createElement("button");
     undo.type = "button";
@@ -230,7 +224,7 @@ function renderSpendLog() {
     undo.textContent = "Undo";
     undo.addEventListener("click", () => undoSpend(entry));
 
-    li.append(main, undo);
+    li.append(amountEl, undo);
     els.spendList.appendChild(li);
   }
 }
@@ -263,14 +257,13 @@ function logSpend() {
   }
 
   const state = loadState() || {};
-  const spendLog = addSpendEntry(state, amount, els.spendNote.value);
+  const spendLog = addSpendEntry(state, amount);
   const moneyLeft = Math.max(0, Number(els.moneyLeft.value) - amount);
 
   els.moneyLeft.value = String(moneyLeft);
   els.moneyLeftNum.value = String(moneyLeft);
   els.moneyLeftDisplay.textContent = formatMoney(moneyLeft);
   els.spendAmount.value = "";
-  els.spendNote.value = "";
 
   persistBudget({
     spendLog,

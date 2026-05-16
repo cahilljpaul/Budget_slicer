@@ -398,9 +398,9 @@ function recalculate() {
 
   if (plan.monthlySave === 0) {
     els.planSummary.textContent =
-      "You chose 0% savings — try 10–20% if you can. Below is how a split would look if you nudge the slider up.";
+      "You chose 0% savings — try 10–20% if you can. The split below shows what changes when you save more.";
   } else {
-    els.planSummary.textContent = `From ${formatMoney(plan.income)} take-home, save ${formatMoney(plan.monthlySave)} (${plan.savePct}%) and live on ${formatMoney(plan.spending)}.`;
+    els.planSummary.textContent = `From ${formatMoney(plan.income)} take-home: save ${formatMoney(plan.monthlySave)} (${plan.savePct}%), live on ${formatMoney(plan.spending)}.`;
   }
 
   renderWageExamples();

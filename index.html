@@ -9,8 +9,9 @@
 <body>
   <main class="app">
     <header class="header">
-      <h1>Budget Slice</h1>
-      <p class="tagline">Daily spend until payday · <a href="savings.html" class="header-link">Plan savings</a></p>
+      <p class="page-eyebrow">Budget Slice</p>
+      <h1>Daily budget</h1>
+      <p class="tagline">Spend until payday — payday itself isn’t counted</p>
     </header>
 
     <section class="card payday-card" aria-live="polite">
@@ -71,33 +72,26 @@
     </section>
 
     <section class="card spend-card">
-      <h2 class="section-title">Log today's spend</h2>
-      <p class="card-lead">Subtracts from money left and tracks against your daily target.</p>
-      <div class="spend-today">
-        <p class="spend-today-label">Spent today</p>
+      <div class="spend-header">
+        <div>
+          <h2 class="section-title">Today’s spend</h2>
+          <p class="spend-status" id="spend-today-status">—</p>
+        </div>
         <p class="spend-today-value" id="spend-today-total">£0</p>
-        <p class="spend-status" id="spend-today-status">—</p>
       </div>
-      <div class="spend-form">
+      <div class="spend-row">
         <input
           type="number"
           id="spend-amount"
-          class="num-input"
+          class="num-input spend-input"
           min="0"
           step="0.01"
-          placeholder="Amount"
-          aria-label="Spend amount in pounds"
+          placeholder="£ spent"
+          aria-label="Amount spent today in pounds"
         />
-        <input
-          type="text"
-          id="spend-note"
-          class="num-input"
-          placeholder="Note (optional)"
-          aria-label="Spend note"
-        />
-        <button type="button" class="btn-primary btn-compact" id="spend-add">Add spend</button>
+        <button type="button" class="btn-primary spend-add-btn" id="spend-add">Log</button>
       </div>
-      <ul class="spend-list" id="spend-list" aria-label="Today's spend entries"></ul>
+      <ul class="spend-list" id="spend-list" hidden aria-label="Today's spend entries"></ul>
     </section>
 
     <section class="card results" id="results">
@@ -150,6 +144,14 @@
       </div>
       <p class="what-if-result" id="what-if-result"></p>
     </section>
+
+    <a href="./savings.html" class="link-card link-card-savings">
+      <span class="link-card-icon" aria-hidden="true">→</span>
+      <span class="link-card-text">
+        <strong>Plan savings &amp; pots</strong>
+        <small>Split your wage, emergency fund &amp; growth</small>
+      </span>
+    </a>
   </main>
 
   <div id="payday-modal" class="modal" hidden aria-hidden="true">
@@ -207,8 +209,14 @@
   </div>
 
   <nav class="bottom-nav" aria-label="Main">
-    <a href="./index.html" class="nav-link nav-link-active" aria-current="page">Budget</a>
-    <a href="./savings.html" class="nav-link">Save</a>
+    <a href="./index.html" class="nav-link nav-link-active" aria-current="page">
+      <span class="nav-icon" aria-hidden="true">£</span>
+      Budget
+    </a>
+    <a href="./savings.html" class="nav-link nav-link-save">
+      <span class="nav-icon" aria-hidden="true">◆</span>
+      Save
+    </a>
   </nav>
 
   <script src="shared.js"></script>

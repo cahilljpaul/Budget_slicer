@@ -6,82 +6,123 @@
   <title>Save &amp; grow — Budget Slice</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body class="page-savings">
   <main class="app app-savings">
     <header class="header">
+      <p class="page-eyebrow">Budget Slice</p>
       <h1>Save &amp; grow</h1>
-      <p class="tagline">Split your wage into pots, savings, and investments · <a href="index.html" class="header-link">Back to budget</a></p>
+      <p class="tagline">Split your wage into safety, goals, and long-term growth</p>
     </header>
 
-    <section class="card budget-bridge" id="budget-bridge" hidden>
-      <h2 class="section-title">From your budget</h2>
-      <p class="card-lead">Pulled from the Budget tab — same saved data in your browser.</p>
-      <div class="bridge-grid" id="budget-bridge-stats"></div>
-    </section>
+    <a href="./index.html" class="link-card link-card-budget">
+      <span class="link-card-icon" aria-hidden="true">←</span>
+      <span class="link-card-text">
+        <strong>Back to daily budget</strong>
+        <small>Money left, daily target &amp; spend log</small>
+      </span>
+    </a>
 
-    <section class="card">
-      <h2 class="section-title">Your payday</h2>
-      <div class="field">
-        <div class="field-header">
-          <label for="monthly-income">Monthly take-home pay</label>
-          <span class="value-display value-display-gold" id="income-display">£2,000</span>
-        </div>
-        <input type="range" id="monthly-income" min="500" max="8000" step="50" value="2000" />
-        <input type="number" id="monthly-income-num" class="num-input" min="0" step="50" value="2000" aria-label="Monthly take-home in pounds" />
+    <section class="section-block section-linked" id="budget-bridge" hidden>
+      <div class="section-heading">
+        <span class="section-badge">Linked</span>
+        <h2 class="section-title">From your budget</h2>
       </div>
-
-      <div class="field">
-        <div class="field-header">
-          <label for="save-percent">Save from each paycheck</label>
-          <span class="value-display value-display-gold" id="save-percent-display">20%</span>
-        </div>
-        <input type="range" id="save-percent" min="0" max="50" step="1" value="20" />
-        <p class="field-hint" id="save-amount-hint">£400/month into savings &amp; pots</p>
-      </div>
-
-      <div class="field">
-        <label class="inline-label" for="emergency-months">Emergency fund target (months of essentials)</label>
-        <select id="emergency-months" class="num-input">
-          <option value="1">1 month</option>
-          <option value="3" selected>3 months</option>
-          <option value="6">6 months</option>
-        </select>
+      <div class="card card-inset">
+        <div class="bridge-grid" id="budget-bridge-stats"></div>
       </div>
     </section>
 
-    <section class="card">
-      <div class="section-header-row">
+    <section class="section-block section-setup">
+      <div class="section-heading">
+        <span class="section-badge">Step 1</span>
+        <h2 class="section-title">Set up your wage</h2>
+      </div>
+      <p class="section-desc">How much you take home and how much you want to save each month.</p>
+      <div class="card card-gold">
+        <div class="field">
+          <div class="field-header">
+            <label for="monthly-income">Monthly take-home pay</label>
+            <span class="value-display value-display-gold" id="income-display">£2,000</span>
+          </div>
+          <input type="range" id="monthly-income" min="500" max="8000" step="50" value="2000" />
+          <input type="number" id="monthly-income-num" class="num-input" min="0" step="50" value="2000" aria-label="Monthly take-home in pounds" />
+        </div>
+
+        <div class="field">
+          <div class="field-header">
+            <label for="save-percent">Save from each paycheck</label>
+            <span class="value-display value-display-gold" id="save-percent-display">20%</span>
+          </div>
+          <input type="range" id="save-percent" min="0" max="50" step="1" value="20" />
+          <p class="field-hint" id="save-amount-hint">£400/month into savings &amp; pots</p>
+        </div>
+
+        <div class="field field-last">
+          <label class="inline-label" for="emergency-months">Emergency fund target</label>
+          <select id="emergency-months" class="num-input">
+            <option value="1">1 month of essentials</option>
+            <option value="3" selected>3 months of essentials</option>
+            <option value="6">6 months of essentials</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-block section-pots">
+      <div class="section-heading">
+        <span class="section-badge">Step 2</span>
         <h2 class="section-title">Goal pots</h2>
-        <button type="button" class="text-btn" id="add-pot">+ Add pot</button>
+        <button type="button" class="btn-ghost" id="add-pot">+ Add pot</button>
       </div>
-      <p class="card-lead">Things you’re saving for — holiday, car, deposit, etc.</p>
-      <div id="pots-list" class="pots-list"></div>
+      <p class="section-desc">Named savings for things you want — holiday, car, deposit, etc.</p>
+      <div class="card card-gold">
+        <div id="pots-list" class="pots-list"></div>
+      </div>
     </section>
 
-    <section class="card card-examples">
-      <h2 class="section-title">Quick ways to save your wage</h2>
+    <section class="section-block section-ideas">
+      <div class="section-heading">
+        <span class="section-badge">Ideas</span>
+        <h2 class="section-title">Ways to save your wage</h2>
+      </div>
+      <p class="section-desc">Common splits — numbers update from your pay above.</p>
       <div class="example-grid" id="wage-examples"></div>
     </section>
 
-    <section class="card card-plan" id="plan-section">
-      <h2 class="section-title">Your suggested split</h2>
-      <p class="card-lead" id="plan-summary"></p>
+    <section class="section-block section-plan" id="plan-section">
+      <div class="section-heading">
+        <span class="section-badge">Your plan</span>
+        <h2 class="section-title">Suggested monthly split</h2>
+      </div>
+      <p class="section-desc" id="plan-summary"></p>
+      <div class="card card-plan-highlight">
+        <div class="plan-bars" id="plan-bars"></div>
+      </div>
 
-      <div class="plan-bars" id="plan-bars"></div>
+      <h3 class="subsection-title">Goal pots — what to put aside</h3>
+      <ul class="pot-results card-inset-list" id="pot-results"></ul>
+    </section>
 
-      <h3 class="subsection-title">Goal pots — monthly</h3>
-      <ul class="pot-results" id="pot-results"></ul>
-
-      <h3 class="subsection-title">Where to put longer-term money</h3>
+    <section class="section-block section-grow">
+      <div class="section-heading">
+        <span class="section-badge">Grow</span>
+        <h2 class="section-title">Savings &amp; investments</h2>
+      </div>
+      <p class="section-desc">Illustrative options for money you won’t need soon. Rates are examples only.</p>
       <div class="product-grid" id="product-grid"></div>
-
-      <p class="disclaimer">Illustrative rates only — not financial advice. Check providers and your own situation before saving or investing.</p>
+      <p class="disclaimer">Not financial advice. Check providers and your situation before committing money.</p>
     </section>
   </main>
 
   <nav class="bottom-nav" aria-label="Main">
-    <a href="./index.html" class="nav-link">Budget</a>
-    <a href="./savings.html" class="nav-link nav-link-active" aria-current="page">Save</a>
+    <a href="./index.html" class="nav-link">
+      <span class="nav-icon" aria-hidden="true">£</span>
+      Budget
+    </a>
+    <a href="./savings.html" class="nav-link nav-link-active nav-link-save" aria-current="page">
+      <span class="nav-icon" aria-hidden="true">◆</span>
+      Save
+    </a>
   </nav>
 
   <script src="shared.js"></script>
